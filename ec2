@@ -12,12 +12,12 @@ case "$1" in
     stat_busy "Starting ec2"
     chmod 1777 /tmp
     ## Set hostname
-    if ! grep -q "compute-[0-9]\{1,\}.internal" /etc/hosts ; then
+    if ! grep -q ".internal" /etc/hosts ; then
       HOSTNAME=$($CURL "${URL}meta-data/local-hostname")
       IPV4=$($CURL "${URL}meta-data/local-ipv4")
-      echo "$IPV4 $HOSTNAME ${HOSTNAME%.compute-?.internal}" >> /etc/hosts
-      grep -q "myhost" /etc/rc.conf && sed -i "s/myhost/${HOSTNAME%.compute-?.internal}/" /etc/rc.conf
-      hostname ${HOSTNAME%.compute-?.internal}
+      echo "$IPV4 $HOSTNAME ${HOSTNAME%.*.internal}" >> /etc/hosts
+      grep -q "myhost" /etc/rc.conf && sed -i "s/myhost/${HOSTNAME%.*.internal}/" /etc/rc.conf
+      hostname ${HOSTNAME%.*.internal}
     fi
     ## Set root key
     if [ ! -f /root/.ssh/authorized_keys ] ; then
