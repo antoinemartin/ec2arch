@@ -1,0 +1,63 @@
+#/bin/bash
+
+URL="http://169.254.169.254/latest/"
+NEWUSER="arch"
+CURL="curl --retry 3  -f -s"
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+
+case "$1" in
+  start)
+    stat_busy "Starting ec2"
+    chmod 1777 /tmp
+    ## Set hostname
+    if ! grep -q "compute-[0-9]\{1,\}.internal" /etc/hosts ; then
+      HOSTNAME=$($CURL "${URL}meta-data/local-hostname")
+      IPV4=$($CURL "${URL}meta-data/local-ipv4")
+      echo "$IPV4 $HOSTNAME ${HOSTNAME%.compute-?.internal}" >> /etc/hosts
+      grep -q "myhost" /etc/rc.conf && sed -i "s/myhost/${HOSTNAME%.compute-?.internal}/" /etc/rc.conf
+      hostname ${HOSTNAME%.compute-?.internal}
+    fi
+    ## Set root key
+    if [ ! -f /root/.ssh/authorized_keys ] ; then
+       mkdir -p /root/.ssh
+       $CURL -o /root/.ssh/authorized_keys "${URL}meta-data/public-keys/0/openssh-key"
+    fi 
+    ## Create arch user
+    if useradd -m -g adm -s /bin/zsh -G wheel,log $NEWUSER 2>/dev/null; then
+       cp -r /root/. /home/$NEWUSER
+       chown -R ${NEWUSER}:adm /home/${NEWUSER}/.
+    fi
+    if [ -f /root/firstboot ]; then
+       if $CURL -o /root/user-data "${URL}user-data"; then
+         /bin/bash /root/user-data
+         rm -f /root/user-data /root/firstboot
+       fi
+    fi
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      add_daemon ec2
+      stat_done
+    fi
+    ;;
+  stop)
+    stat_busy "Stopping ec2"
+    if [ $? -gt 0 ]; then
+      stat_fail
+    else
+      rm_daemon ec2
+      stat_done
+    fi
+    ;;
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart}"
+esac
+exit 0
+
