@@ -4,10 +4,10 @@ pkgver=1.0
 pkgrel=1
 pkgdesc="Initial script for EC2"
 arch=(any)
-url=""
+url="http://github.com/yejun/ec2arch"
 license=('BSD')
 depends=(initscripts)
-source=(ec2)
+source=(http://github.com/yejun/ec2arch/raw/master/ec2)
 md5sums=('73a0c7930d100d0435144b8a5cbd57e2')
 
 build() {
