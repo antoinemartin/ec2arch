@@ -39,8 +39,9 @@ case "$1" in
     if [ -f /root/firstboot ]; then
        if $CURL -o /root/user-data "${URL}user-data"; then
          /bin/bash /root/user-data
-         rm -f /root/user-data /root/firstboot
+         rm -f /root/user-data
        fi
+       rm -f /root/firstboot
     fi
     if [ $? -gt 0 ]; then
       stat_fail
@@ -50,6 +51,9 @@ case "$1" in
     ;;
   stop)
     stat_busy "Stopping ec2"
+    mv /etc/rc.conf.orig /etc/rc.conf
+    mv /etc/hosts.orig /etc/hosts
+    chattr -i /etc/resolv.conf
     if [ $? -gt 0 ]; then
       stat_fail
     else
