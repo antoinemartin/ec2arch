@@ -23,7 +23,7 @@ case "$1" in
             s/default gw 192.168.0.1/default gw $GATEWAY/; s/!gateway/gateway/" /etc/rc.conf
         hostname ${HOSTNAME%.*.internal}
         chattr +i /etc/resolv.conf
-        kill -SIGHUP `pidof syslog-ng`
+        kill -HUP `pidof syslog-ng`
       fi
     fi
     ## Set root key
