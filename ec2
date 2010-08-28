@@ -13,6 +13,8 @@ case "$1" in
     chmod 1777 /tmp
     ## Set hostname and static ip
     if ! grep -q ".internal" /etc/hosts ; then
+      cp /etc/hosts /etc/hosts.orig
+      cp /etc/rc.conf /etc/rc.conf.orig
       HOSTNAME=$($CURL "${URL}meta-data/local-hostname")
       IPV4=$($CURL "${URL}meta-data/local-ipv4")
       ETH0=$(ifconfig eth0 | sed -nr '2s/^ +inet addr:([0-9\.]+) +Bcast:([0-9\.]+) +Mask:([0-9\.]+)$/eth0 \1 netmask \3 broadcast \2/p')
