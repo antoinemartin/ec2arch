@@ -19,6 +19,7 @@ case "$1" in
       if [[ -n "$HOSTNAME" && -n "$IPV4" && -n "${HOSTNAME%.*.internal}" ]]; then
         echo "$IPV4 $HOSTNAME ${HOSTNAME%.*.internal}" >> /etc/hosts
       fi
+      echo "domain $(hostname -d)" >> /etc/resolv.conf
     fi
     ## Set root key
     if [ ! -f /root/.ssh/authorized_keys ] ; then
@@ -45,6 +46,7 @@ case "$1" in
     ;;
   stop)
     stat_busy "Stopping ec2"
+    sed -i "/domain/d" /etc/resolv.conf
     sed -i "/$(hostname)/d" /etc/hosts
     if [ $? -gt 0 ]; then
       stat_fail
