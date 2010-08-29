@@ -14,18 +14,10 @@ case "$1" in
     ## Set hostname and static ip
     if ! grep -q ".internal" /etc/hosts ; then
       cp /etc/hosts /etc/hosts.orig
-      cp /etc/rc.conf /etc/rc.conf.orig
       HOSTNAME=$($CURL "${URL}meta-data/local-hostname")
       IPV4=$($CURL "${URL}meta-data/local-ipv4")
-      ETH0=$(ifconfig eth0 | sed -nr '2s/^ +inet addr:([0-9\.]+) +Bcast:([0-9\.]+) +Mask:([0-9\.]+)$/eth0 \1 netmask \3 broadcast \2/p')
-      GATEWAY=$(route | sed -nr '4s/^default +([0-9\.]+).+$/\1/p')
-      if [[ -n "$HOSTNAME" && -n "$IPV4" && -n "$ETH0" && -n "$GATEWAY" && -n "${HOSTNAME%.*.internal}" ]]; then
+      if [[ -n "$HOSTNAME" && -n "$IPV4" && -n "${HOSTNAME%.*.internal}" ]]; then
         echo "$IPV4 $HOSTNAME ${HOSTNAME%.*.internal}" >> /etc/hosts
-        sed -i "s/myhost/${HOSTNAME%.*.internal}/; s/^eth0=\"dhcp\"/eth0=\"$ETH0\"/; \
-            s/default gw 192.168.0.1/default gw $GATEWAY/; s/!gateway/gateway/" /etc/rc.conf
-        hostname ${HOSTNAME%.*.internal}
-        chattr +i /etc/resolv.conf
-        kill -HUP `pidof syslog-ng`
       fi
     fi
     ## Set root key
@@ -53,9 +45,7 @@ case "$1" in
     ;;
   stop)
     stat_busy "Stopping ec2"
-    mv /etc/rc.conf.orig /etc/rc.conf
-    mv /etc/hosts.orig /etc/hosts
-    chattr -i /etc/resolv.conf
+    sed -i "/$(hostname)/d" /etc/hosts
     if [ $? -gt 0 ]; then
       stat_fail
     else
