@@ -28,6 +28,9 @@ case "$1" in
     fi
     ## Create arch user
     if useradd -m -g adm -s /bin/zsh -G wheel,log $NEWUSER 2>/dev/null; then
+NEWPASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1`
+       usermod -p$NEWPASSWORD $NEWUSER
+       echo $NEWPASSWORD > /root/archpasswd
        cp -r /root/. /home/$NEWUSER
        chown -R ${NEWUSER}:adm /home/${NEWUSER}/.
     fi
