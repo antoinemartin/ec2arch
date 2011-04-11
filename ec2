@@ -19,7 +19,7 @@ case "$1" in
       if [[ -n "$HOSTNAME" && -n "$IPV4" && -n "${HOSTNAME%.*.internal}" ]]; then
         echo "$IPV4 $HOSTNAME ${HOSTNAME%.*.internal}" >> /etc/hosts
       fi
-      echo "domain $(hostname -d)" >> /etc/resolv.conf
+      echo "domain ${HOSTNAME#$(hostname).}" >> /etc/resolv.conf
     fi
     ## Set root key
     if [ ! -f /root/.ssh/authorized_keys ] ; then
@@ -27,7 +27,7 @@ case "$1" in
        $CURL -o /root/.ssh/authorized_keys "${URL}meta-data/public-keys/0/openssh-key"
     fi
     ## Create arch user
-    if useradd -m -g adm -s /bin/zsh -p x -G wheel,log $NEWUSER 2>/dev/null; then
+    if useradd -m -g adm -s /bin/bash -p x -G wheel,log $NEWUSER 2>/dev/null; then
        cp -r /root/. /home/$NEWUSER
        chown -R ${NEWUSER}:adm /home/${NEWUSER}/.
     fi
