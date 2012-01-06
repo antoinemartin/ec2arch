@@ -17,7 +17,7 @@ case "$1" in
       HOSTNAME=$($CURL "${URL}meta-data/local-hostname")
       IPV4=$($CURL "${URL}meta-data/local-ipv4")
       if [[ -n "$HOSTNAME" && -n "$IPV4" && -n "${HOSTNAME%.*.internal}" ]]; then
-        echo "$IPV4 $HOSTNAME ${HOSTNAME%.*.internal}" >> /etc/hosts
+        echo "$IPV4 $HOSTNAME ${HOSTNAME%.*.internal} $(hostname)" >> /etc/hosts
       fi
       echo "domain ${HOSTNAME#$(hostname).}" >> /etc/resolv.conf
     fi
